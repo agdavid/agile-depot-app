@@ -1,5 +1,5 @@
 class CombineItemsInCart < ActiveRecord::Migration[5.0]
-  def change
+  def self.up
       Cart.all.each do |cart|
           # count the number of each product in the cart
           sums = cart.line_items.group(:product_id).sum(:quantity)
@@ -13,6 +13,21 @@ class CombineItemsInCart < ActiveRecord::Migration[5.0]
                   cart.line_items.create(:product_id => product_id, :quantity => quantity)
               end
           end
+      end
+  end
+
+  def self.down 
+      # split items with quantity > 1 into multiple items 
+      LineItem.where("quantity>1").each do |lineitem|
+          # add individual items
+          lineitem.quantity.times do 
+              LineItem.create(:cart_id => lineitem.cart_id,
+                              :product_id => lineitem.product_id,
+                              :quantity=> 1)
+          end
+
+          # destroy original line_item with multiple quantity
+          lineitem.destroy
       end
   end
 end
