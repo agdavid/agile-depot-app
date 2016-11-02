@@ -31,6 +31,7 @@ class LineItemsController < ApplicationController
     respond_to do |format|
       if @line_item.save
         format.html { redirect_to(store_url) }
+        format.js { @current_item = @line_item }#response for a known JS request (i.e., remote true)
         format.json { render :show, status: :created, location: @line_item }
       else
         format.html { render :new }
